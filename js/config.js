@@ -16,7 +16,7 @@
 
 const CONFIG = {
   // วาง URL ของ Apps Script Web App ที่นี่ เช่น "https://script.google.com/macros/s/AKfyc.../exec"
-  APPS_SCRIPT_URL: "",
+  APPS_SCRIPT_URL: "https://script.googleusercontent.com/a/macros/lsp.ac.th/echo?user_content_key=AUkAhnSGGNKFWumLdPz8eYasU9kbsgGjEnZZ70hIRmUYUHcyDNT5JZVtGCBR7QEJGSEgGbGy1j_djoZCN9C93QcSZMY_7VWDEldmwysnQuhOOqjxFFQbsOrr8Pr05rVee6O8NBnPbD2FmrDZMfmcOL4Z1OSSGR8V9rZnH6_8N0rhn0RYELEiVYGkhEbMPbZKV6xVF1d1jHXHeVcanpcfRUIGI9V03seYniyHTqD0uFw9KGulWthoMWBECtsr5WQTAraBTQnbBiNkSbbb2fMgDAVi2LjXuA83Z78YruyZbtIo&lib=MvtoC1xnl_m3RGriv61MQPjE3UVEaUg8E",
 
   // รหัสผ่านสำหรับเปิดหน้าแอดมิน (เปลี่ยนได้)
   ADMIN_PASSCODE: "mathweek2026",
