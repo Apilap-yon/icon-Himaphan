@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Math Week 2026 · Math Isekai — รับสมัครแข่งขันคณิตศาสตร์</title>
+  <meta name="description" content="รับสมัครแข่งขันคณิตศาสตร์ Math Week 2026 ธีม Math Isekai ผจญภัยในป่าหิมพานต์ — IQ180, Math Genius, Sudoku, Tangram, Checkers และศึกใหญ่ Math to Tower" />
+  <link rel="icon" href="assets/img/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- ปุ่มลอย -->
+  <a href="admin.html" class="admin-link" title="สำหรับเจ้าหน้าที่">⚙️</a>
+
+  <!-- HERO -->
+  <header class="hero" id="top">
+    <div class="hero__overlay"></div>
+    <div class="hero__content">
+      <p class="hero__badge">🌀 ยินดีต้อนรับสู่ต่างโลก</p>
+      <h1 class="hero__title">MATH WEEK <span>2026</span></h1>
+      <p class="hero__theme">— ธีม <strong>Math Isekai</strong> —</p>
+      <p class="hero__subtitle" id="hero-subtitle"></p>
+      <div class="hero__cta">
+        <a href="#competitions" class="btn btn--primary">⚔️ สมัครแข่งขัน</a>
+        <a href="#volunteer" class="btn btn--ghost">🤝 สมัครจิตอาสา</a>
+      </div>
+    </div>
+    <div class="hero__scroll">▼ เลื่อนลงเพื่อเริ่มการผจญภัย ▼</div>
+  </header>
+
+  <!-- ตารางภาพรวม -->
+  <section class="section section--schedule" id="schedule">
+    <h2 class="section__title">🗺️ แผนที่การผจญภัย</h2>
+    <p class="section__lead">ทุกรายการแข่งขันรายบุคคล เวลา <strong id="contest-time"></strong></p>
+    <div class="schedule" id="schedule-list"></div>
+  </section>
+
+  <!-- การแข่งขันรายบุคคล -->
+  <section class="section" id="competitions">
+    <h2 class="section__title">⚔️ ด่านการแข่งขัน (7 รายการ)</h2>
+    <p class="section__lead">เลือกด่านที่ใจปรารถนา แล้วกดสมัครเพื่อออกผจญภัย</p>
+    <div class="card-grid" id="competition-grid"></div>
+  </section>
+
+  <!-- ศึกใหญ่ Math to Tower -->
+  <section class="section section--grand" id="grand">
+    <h2 class="section__title">🏯 ศึกใหญ่ประจำสัปดาห์</h2>
+    <div id="grand-event"></div>
+  </section>
+
+  <!-- จิตอาสา -->
+  <section class="section section--volunteer" id="volunteer">
+    <h2 class="section__title">🤝 รับสมัครจิตอาสา</h2>
+    <p class="section__lead">ร่วมเป็นผู้พิทักษ์ป่าหิมพานต์ ช่วยงานในแต่ละวันของสัปดาห์คณิตศาสตร์</p>
+    <form id="volunteer-form" class="form form--volunteer" autocomplete="off">
+      <div class="form__row">
+        <label>ชื่อ - นามสกุล <span class="req">*</span>
+          <input type="text" name="name" required placeholder="เช่น เด็กชายคณิต รักเลข" />
+        </label>
+        <label>ชั้น / ห้อง <span class="req">*</span>
+          <input type="text" name="classroom" required placeholder="เช่น ม.5/2" />
+        </label>
+      </div>
+      <div class="form__row">
+        <label>เลขประจำตัวนักเรียน <span class="req">*</span>
+          <input type="text" name="studentId" required placeholder="เช่น 12345" />
+        </label>
+        <label>เบอร์โทร / LINE ID <span class="req">*</span>
+          <input type="text" name="contact" required placeholder="เช่น 08x-xxxxxxx" />
+        </label>
+      </div>
+      <fieldset class="form__fieldset">
+        <legend>เลือกวัน/รายการที่อยากช่วย <span class="req">*</span> (เลือกได้มากกว่า 1)</legend>
+        <div class="vol-tasks" id="volunteer-tasks"></div>
+      </fieldset>
+      <label>หมายเหตุ / ความถนัด
+        <textarea name="note" rows="2" placeholder="เช่น ช่วยคุมเวลา, ดูแลคะแนน, ถ่ายรูป ฯลฯ"></textarea>
+      </label>
+      <button type="submit" class="btn btn--primary btn--block">🛡️ ส่งใบสมัครจิตอาสา</button>
+      <p class="form__status" id="volunteer-status" role="status"></p>
+    </form>
+  </section>
+
+  <footer class="footer">
+    <p>✨ Math Week 2026 · Math Isekai ✨</p>
+    <p class="footer__small">การผจญภัยในป่าหิมพานต์แห่งคณิตศาสตร์</p>
+  </footer>
+
+  <!-- MODAL สมัครแข่งขัน -->
+  <div class="modal" id="register-modal" aria-hidden="true">
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal__close" data-close aria-label="ปิด">✕</button>
+      <h3 class="modal__title" id="modal-title"></h3>
+      <div class="modal__meta" id="modal-meta"></div>
+      <form id="register-form" class="form" autocomplete="off">
+        <input type="hidden" name="competitionId" />
+        <div id="team-fields"></div>
+        <div class="form__row">
+          <label>เลขประจำตัวนักเรียน <span class="req">*</span>
+            <input type="text" name="studentId" required placeholder="เช่น 12345" />
+          </label>
+          <label>เบอร์โทร / LINE ID <span class="req">*</span>
+            <input type="text" name="contact" required placeholder="เช่น 08x-xxxxxxx" />
+          </label>
+        </div>
+        <label>ครูที่ปรึกษา (ถ้ามี)
+          <input type="text" name="advisor" placeholder="ชื่อครูที่ปรึกษา" />
+        </label>
+        <button type="submit" class="btn btn--primary btn--block">🚀 ยืนยันการสมัคร</button>
+        <p class="form__status" id="register-status" role="status"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast" aria-live="polite"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

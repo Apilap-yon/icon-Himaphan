@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>แอดมิน · Math Week 2026</title>
+  <link rel="icon" href="assets/img/favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 2rem 1.2rem; }
+    .admin-bar { display: flex; flex-wrap: wrap; gap: .8rem; align-items: center; margin: 1rem 0; }
+    .admin-bar select, .admin-bar input { padding: .5em .7em; border: 2px solid #d9cfb4; border-radius: 10px; font-family: inherit; }
+    table { width: 100%; border-collapse: collapse; background: var(--paper-2); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
+    th, td { padding: .6rem .7rem; text-align: left; border-bottom: 1px solid #ece2c8; font-size: .9rem; vertical-align: top; }
+    th { background: var(--leaf-deep); color: #fff; position: sticky; top: 0; }
+    tr:hover td { background: #fbf6e6; }
+    .pill { display: inline-block; padding: .1em .6em; border-radius: 999px; font-size: .78rem; font-weight: 700; }
+    .pill--comp { background: #e7f0e9; color: var(--leaf-deep); }
+    .pill--vol { background: #efe7f5; color: var(--mystic); }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: .8rem; margin: 1rem 0; }
+    .stat { background: var(--paper-2); border: 2px solid #e6dcc0; border-radius: 12px; padding: .8rem 1rem; text-align: center; box-shadow: var(--shadow); }
+    .stat b { display: block; font-size: 1.6rem; color: var(--leaf-deep); }
+    .stat span { font-size: .82rem; color: var(--ink-soft); }
+    .gate { max-width: 360px; margin: 18vh auto; text-align: center; background: var(--paper-2); border: 2px solid #e6dcc0; border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow); }
+    .muted { color: var(--ink-soft); }
+    .table-scroll { overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <!-- ประตูรหัสผ่าน -->
+  <div class="gate" id="gate">
+    <h2>🔐 พื้นที่เจ้าหน้าที่</h2>
+    <p class="muted">กรอกรหัสผ่านเพื่อดูรายชื่อผู้สมัคร</p>
+    <form id="gate-form" class="form">
+      <input type="password" id="passcode" placeholder="รหัสผ่าน" />
+      <button class="btn btn--primary btn--block">เข้าสู่ระบบ</button>
+      <p class="form__status form__status--err" id="gate-err"></p>
+    </form>
+  </div>
+
+  <!-- แดชบอร์ด -->
+  <main class="admin-wrap" id="dashboard" hidden>
+    <a href="index.html" class="muted">← กลับหน้าสมัคร</a>
+    <h1>📊 รายชื่อผู้สมัคร — Math Week 2026</h1>
+    <p class="muted" id="source-note"></p>
+
+    <div class="stat-grid" id="stats"></div>
+
+    <div class="admin-bar">
+      <select id="filter-kind">
+        <option value="all">ทั้งหมด</option>
+        <option value="competition">เฉพาะแข่งขัน</option>
+        <option value="volunteer">เฉพาะจิตอาสา</option>
+      </select>
+      <input type="search" id="search" placeholder="🔍 ค้นหาชื่อ/เลขนักเรียน/รายการ" />
+      <button class="btn btn--gold" id="export-csv">⬇️ ส่งออก CSV</button>
+      <button class="btn btn--ghost" id="clear-local">🗑️ ล้างข้อมูลในเครื่อง</button>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>เวลา</th><th>ประเภท</th><th>ชื่อ</th><th>ชั้น/ห้อง</th>
+            <th>เลขนักเรียน</th><th>รายการ</th><th>ติดต่อ</th><th>หมายเหตุ</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p class="muted" id="empty-note" hidden>ยังไม่มีข้อมูลในเครื่องนี้ — ข้อมูลที่ส่งไป Google Sheet ให้ดูในชีตโดยตรง</p>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script>
+    const $ = (s) => document.querySelector(s);
+
+    // ประตูรหัสผ่าน
+    $("#gate-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      if ($("#passcode").value === CONFIG.ADMIN_PASSCODE) {
+        $("#gate").hidden = true;
+        $("#dashboard").hidden = false;
+        render();
+      } else {
+        $("#gate-err").textContent = "รหัสผ่านไม่ถูกต้อง";
+      }
+    });
+
+    function fmtTime(iso) {
+      const d = new Date(iso);
+      return d.toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" });
+    }
+
+    function recordRow(r) {
+      const isVol = r.kind === "volunteer";
+      const list = isVol ? (r.tasksLabel || r.tasks || []).join(", ") : (r.competitionName || "");
+      let extra = "";
+      if (!isVol && r.members) {
+        extra = "ทีม: " + r.members.map((m) => `${m.name} (${m.classroom})`).join(", ");
+      }
+      return `<tr>
+        <td>${fmtTime(r.timestamp)}</td>
+        <td><span class="pill ${isVol ? "pill--vol" : "pill--comp"}">${isVol ? "จิตอาสา" : "แข่งขัน"}</span></td>
+        <td>${esc(r.name || "")}${r.teamName ? `<br><small class="muted">${esc(r.teamName)}</small>` : ""}</td>
+        <td>${esc(r.classroom || "-")}</td>
+        <td>${esc(r.studentId || "-")}</td>
+        <td>${esc(list)}</td>
+        <td>${esc(r.contact || "-")}</td>
+        <td>${esc(r.note || extra || (r.advisor ? "ครู: " + r.advisor : "-"))}</td>
+      </tr>`;
+    }
+
+    function esc(s) {
+      return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    }
+
+    function render() {
+      const all = loadLocal();
+      $("#source-note").textContent = CONFIG.APPS_SCRIPT_URL
+        ? "หมายเหตุ: ตารางนี้แสดงสำเนาในเครื่องนี้เท่านั้น ข้อมูลตัวจริงรวมทุกเครื่องอยู่ใน Google Sheet"
+        : "โหมด localStorage: ข้อมูลถูกเก็บในเบราว์เซอร์เครื่องนี้";
+
+      const kind = $("#filter-kind").value;
+      const q = $("#search").value.trim().toLowerCase();
+      let rows = all.filter((r) => (kind === "all" ? true : r.kind === kind));
+      if (q) {
+        rows = rows.filter((r) =>
+          JSON.stringify(r).toLowerCase().includes(q)
+        );
+      }
+      rows.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+
+      $("#rows").innerHTML = rows.map(recordRow).join("");
+      $("#empty-note").hidden = all.length > 0;
+
+      // สถิติ
+      const comp = all.filter((r) => r.kind === "competition").length;
+      const vol = all.filter((r) => r.kind === "volunteer").length;
+      $("#stats").innerHTML = `
+        <div class="stat"><b>${all.length}</b><span>รวมทั้งหมด</span></div>
+        <div class="stat"><b>${comp}</b><span>สมัครแข่งขัน</span></div>
+        <div class="stat"><b>${vol}</b><span>จิตอาสา</span></div>`;
+    }
+
+    $("#filter-kind").addEventListener("change", render);
+    $("#search").addEventListener("input", render);
+
+    $("#export-csv").addEventListener("click", () => {
+      const all = loadLocal();
+      if (!all.length) return alert("ไม่มีข้อมูลให้ส่งออก");
+      const headers = ["timestamp", "kind", "name", "teamName", "classroom", "studentId",
+        "competitionName", "tasksLabel", "contact", "advisor", "note", "members"];
+      const lines = [headers.join(",")];
+      all.forEach((r) => {
+        const row = headers.map((h) => {
+          let v = r[h];
+          if (Array.isArray(v)) v = v.map((x) => (typeof x === "object" ? `${x.name}(${x.classroom})` : x)).join(" | ");
+          if (v == null) v = "";
+          return `"${String(v).replace(/"/g, '""')}"`;
+        });
+        lines.push(row.join(","));
+      });
+      const blob = new Blob(["﻿" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `mathweek2026_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+    });
+
+    $("#clear-local").addEventListener("click", () => {
+      if (confirm("ลบสำเนาข้อมูลในเครื่องนี้ทั้งหมด? (ข้อมูลใน Google Sheet จะไม่ถูกลบ)")) {
+        localStorage.removeItem(LS_KEY);
+        render();
+      }
+    });
+  </script>
+</body>
+</html>
